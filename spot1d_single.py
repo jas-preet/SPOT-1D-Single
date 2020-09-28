@@ -25,40 +25,40 @@ means = torch.tensor(means, dtype=torch.float32)
 stds = torch.tensor(stds, dtype=torch.float32)
 
 if args.device == "cpu" and args.batch == 1:
-    model1_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_class.pth")
-    model2_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_class.pth")
-    model3_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_class.pth")
+    model1_class = torch.jit.load("jits/model1_class.pth")
+    model2_class = torch.jit.load("jits/model2_class.pth")
+    model3_class = torch.jit.load("jits/model3_class.pth")
 
-    model1_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_reg.pth")
-    model2_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_reg.pth")
-    model3_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_reg.pth")
+    model1_reg = torch.jit.load("jits/model1_reg.pth")
+    model2_reg = torch.jit.load("/jits/model2_reg.pth")
+    model3_reg = torch.jit.load("jits/model3_reg.pth")
 
 elif args.device == "cpu" and args.batch == 10:
-    model1_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_class_batch10.pth")
-    model2_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_class_batch10.pth")
-    model3_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_class_batch10.pth")
+    model1_class = torch.jit.load("jits/model1_class_batch10.pth")
+    model2_class = torch.jit.load("jits/model2_class_batch10.pth")
+    model3_class = torch.jit.load("jits/model3_class_batch10.pth")
 
-    model1_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_reg_batch10.pth")
-    model2_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_reg_batch10.pth")
-    model3_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_reg_batch10.pth")
+    model1_reg = torch.jit.load("jits/model1_reg_batch10.pth")
+    model2_reg = torch.jit.load("jits/model2_reg_batch10.pth")
+    model3_reg = torch.jit.load("jits/model3_reg_batch10.pth")
 
 elif args.device == "cuda:0" and args.batch == 1:
-    model1_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_class_batch1_GPU.pth")
-    model2_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_class_batch1_GPU.pth")
-    model3_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_class_batch1_GPU.pth")
+    model1_class = torch.jit.load("jits/model1_class_batch1_GPU.pth")
+    model2_class = torch.jit.load("jits/model2_class_batch1_GPU.pth")
+    model3_class = torch.jit.load("jits/model3_class_batch1_GPU.pth")
 
-    model1_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_reg_batch1_GPU.pth")
-    model2_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_reg_batch1_GPU.pth")
-    model3_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_reg_batch1_GPU.pth")
+    model1_reg = torch.jit.load("jits/model1_reg_batch1_GPU.pth")
+    model2_reg = torch.jit.load("jits/model2_reg_batch1_GPU.pth")
+    model3_reg = torch.jit.load("jits/model3_reg_batch1_GPU.pth")
 
 elif args.device == "cuda:0" and args.batch == 10:
-    model1_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_class_batch10_GPU.pth")
-    model2_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_class_batch10_GPU.pth")
-    model3_class = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_class_batch10_GPU.pth")
+    model1_class = torch.jit.load("jits/model1_class_batch10_GPU.pth")
+    model2_class = torch.jit.load("jits/model2_class_batch10_GPU.pth")
+    model3_class = torch.jit.load("jits/model3_class_batch10_GPU.pth")
 
-    model1_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model1_reg_batch10_GPU.pth")
-    model2_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model2_reg_batch10_GPU.pth")
-    model3_reg = torch.jit.load("/home/jaspreet/jaspreet_data/jits/model3_reg_batch10_GPU.pth")
+    model1_reg = torch.jit.load("jits/model1_reg_batch10_GPU.pth")
+    model2_reg = torch.jit.load("jits/model2_reg_batch10_GPU.pth")
+    model3_reg = torch.jit.load("jits/model3_reg_batch10_GPU.pth")
 else:
     print("please check the arguments passed and refer to help associated with the arguments")
 

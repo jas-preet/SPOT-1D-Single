@@ -30,7 +30,7 @@ if args.device == "cpu" and args.batch == 1:
     model3_class = torch.jit.load("jits/model3_class.pth")
 
     model1_reg = torch.jit.load("jits/model1_reg.pth")
-    model2_reg = torch.jit.load("/jits/model2_reg.pth")
+    model2_reg = torch.jit.load("jits/model2_reg.pth")
     model3_reg = torch.jit.load("jits/model3_reg.pth")
 
 elif args.device == "cpu" and args.batch == 10:

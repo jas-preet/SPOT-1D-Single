@@ -65,4 +65,6 @@ or
 
 `python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cpu` 
 
-
+Datasets
+----
+`wget https://www.dropbox.com/s/2k4l6u82pwbadgl/datasets.tar.xz`

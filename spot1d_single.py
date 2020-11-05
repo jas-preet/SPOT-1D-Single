@@ -3,7 +3,7 @@ import numpy as np
 from dataset.dataset_inference import ProteinDataset, text_collate_fn
 from dataset.data_functions import pickle_load, read_list
 from torch.utils.data import DataLoader
-from main import classification, regression, write_csv_new
+from main import classification, regression, write_csv
 import argparse
 
 parser = argparse.ArgumentParser()

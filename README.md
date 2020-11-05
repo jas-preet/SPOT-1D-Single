@@ -55,12 +55,14 @@ for CPU only
 
 8. `conda install pandas=1.1.1`
 
+Execute
+----
 To run SPOT-1D-Single use the following command
 
-9. `python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cuda:0`
+`python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cuda:0`
 
 or 
 
-9. `python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cpu` 
+`python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cpu` 
 
 

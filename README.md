@@ -48,10 +48,10 @@ To install the dependencies and create a conda environment use the following com
 6. `conda activate spot_single_env`
 
 if GPU computer:
-7. `conda install pytorch torchvision cudatoolkit=10.1 -c pytorch`
+7. `conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch`
 
 for CPU only 
-7. `conda install pytorch torchvision cpuonly -c pytorch`
+7. `conda install pytorch==1.6.0 torchvision==0.7.0 cpuonly -c pytorch`
 
 8. `conda install pandas=1.1.1`
 

@@ -39,7 +39,7 @@ To install SPOT-1D-Single and it's dependencies following commands can be used i
 
 To download the model check points from the dropbox use the following commands in the terminal:
 
-3. `wget https://www.dropbox.com/s/p62b1mr63e49ouc/jits.tar.xz?dl=0 -o jits.tar.xz`
+3. `wget https://www.dropbox.com/s/gree7whebuovz0w/jits.tar.xz`
 4. `tar -xz jits.tar.xz`
 
 To install the dependencies and create a conda environment use the following commands

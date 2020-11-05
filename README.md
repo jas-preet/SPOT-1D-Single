@@ -44,7 +44,7 @@ To download the model check points from the dropbox use the following commands i
 
 To install the dependencies and create a conda environment use the following commands
 
-5. `conda create -n spot_single_env python3.7`
+5. `conda create -n spot_single_env python=3.7`
 6. `conda activate spot_single_env`
 
 if GPU computer:

@@ -168,15 +168,7 @@ def regression(data_loader, model1, model2, model3, mean, std, device):
     return psi_list, phi_list, theta_list, tau_list, hseu_list, hsed_list, cn_list, asa_list
 
 
-def write_csv(data_array, save_path):
-    pd.DataFrame(data_array).to_csv(save_path,
-                                    header=["AA", "SS3", "SS8", "P3C", "P3E", "P3H", "P8C", "P8S", "P8T", "P8H", "P8G",
-                                            "P8I", "P8E", "P8B", "ASA", "HseU", "HseD", "CN", "Psi", "Phi", "Theta",
-                                            "Tau"])
-    return print(save_path, " saved.")
-
-
-def write_csv_new(class_out, reg_out, save_dir):
+def write_csv(class_out, reg_out, save_dir):
     names, seq, ss3_pred_list, ss8_pred_list, ss3_prob_list, ss8_prob_list = class_out
     psi_list, phi_list, theta_list, tau_list, hseu_list, hsed_list, cn_list, asa_list = reg_out
 

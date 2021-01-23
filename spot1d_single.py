@@ -32,7 +32,7 @@ if args.device == "cpu":
     model2_reg = torch.jit.load("jits/model2_reg_cpu.pth")
     model3_reg = torch.jit.load("jits/model3_reg_cpu.pth")
 
-elif args.device == "cuda:0" and args.batch == 1:
+elif args.device == "cuda:0":
     model1_class = torch.jit.load("jits/model1_class_gpu.pth")
     model2_class = torch.jit.load("jits/model2_class_gpu.pth")
     model3_class = torch.jit.load("jits/model3_class_gpu.pth")

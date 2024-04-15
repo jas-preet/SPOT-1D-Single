@@ -1,4 +1,4 @@
-SPOT-1D-Single: *Improving theSingle-Sequence-Based Prediction of ProteinSecondary Structure, Backbone Angles, SolventAccessibility and Half-Sphere Exposures using aLarge Training Set and Ensembled Deep Learning.*
+SPOT-1D-Single: *Improving the Single-Sequence-Based Prediction of Protein Secondary Structure, Backbone Angles, Solvent Accessibility and Half-Sphere Exposures using a Large Training Set and Ensembled Deep Learning.*
 ====
 The standalone version of SPOT-1D-Single available for public use for research purposes. 
 

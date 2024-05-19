@@ -11,13 +11,14 @@ Contents
 # SPOT-1D-Single
 
 Introduction
-----
+![image](https://github.com/jas-preet/SPOT-1D-Single/assets/34640945/34ee403a-a8f9-40ab-ad1a-e1970452163c)
 
 Results
 ----
 
 System Requirments
 ----
+![Uploading image.png…]()
 
 **Hardware Requirments:**
 SPOT-1D-single predictor requires only a standard computer with approximately 16 GB RAM to support the in-memory operations.

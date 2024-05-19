@@ -11,6 +11,7 @@ Contents
 # SPOT-1D-Single
 
 Introduction
+----
 ![image](https://github.com/jas-preet/SPOT-1D-Single/assets/34640945/34ee403a-a8f9-40ab-ad1a-e1970452163c)
 
 Results

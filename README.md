@@ -1,80 +1,114 @@
-SPOT-1D-Single: *Improving the Single-Sequence-Based Prediction of Protein Secondary Structure, Backbone Angles, Solvent Accessibility and Half-Sphere Exposures using a Large Training Set and Ensembled Deep Learning.*
-====
-The standalone version of SPOT-1D-Single available for public use for research purposes. 
-
-Contents
-----
-  * [Introduction](#introduction)
-  * [Results](#results)
-  * [System Requirments](#system-requirments)
-
 # SPOT-1D-Single
 
-Introduction
-----
-![image](https://github.com/jas-preet/SPOT-1D-Single/assets/34640945/34ee403a-a8f9-40ab-ad1a-e1970452163c)
+*Improving the Single-Sequence-Based Prediction of Protein Secondary Structure, Backbone Angles, Solvent Accessibility and Half-Sphere Exposures using a Large Training Set and Ensembled Deep Learning.*
 
-Results
-----
+The standalone version of SPOT-1D-Single, available for public use for research purposes. It predicts per-residue structural properties from a protein sequence alone, without needing a multiple sequence alignment.
 
-System Requirments
-----
-![Uploading image.png…]()
+![SPOT-1D-Single](https://github.com/jas-preet/SPOT-1D-Single/assets/34640945/34ee403a-a8f9-40ab-ad1a-e1970452163c)
 
-**Hardware Requirments:**
-SPOT-1D-single predictor requires only a standard computer with approximately 16 GB RAM to support the in-memory operations.
+## Contents
 
-* [Python3.7](https://docs.python-guide.org/starting/install3/linux/)
-* [Anaconda](https://anaconda.org/anaconda/virtualenv)
-* [CUDA 10.1](https://developer.nvidia.com/cuda-10.1-download-archive) (Optional if using GPU)
-* [cuDNN (>= 7.4.1)](https://developer.nvidia.com/cudnn) (Optional if using GPU)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Output](#output)
+- [Limitations](#limitations)
+- [Datasets](#datasets)
+- [Tests](#tests)
+- [Citation](#citation)
+- [License](#license)
 
-Installation
-----
+## Requirements
 
-To install SPOT-1D-Single and it's dependencies following commands can be used in terminal:
+- About 1 GB of free RAM on CPU (measured peak: 0.7 GB for a 3,000-residue protein)
+- Python 3 with PyTorch, NumPy and pandas
+- Optional: an NVIDIA GPU with CUDA
 
-1. `git clone https://github.com/jas-preet/SPOT-1D-Single.git`
-2. `cd SPOT-1D-Single`
+Tested on CPU with Python 3.12, PyTorch 2.15, NumPy 2.5 and pandas 3.1. The checkpoints were exported with PyTorch 1.6 on Python 3.7, and `requirements.txt` does not pin versions. If your PyTorch cannot load the checkpoints, use the [original environment](#original-environment).
 
-To download the model check points from the dropbox use the following commands in the terminal:
+## Installation
 
-3. `wget https://apisz.sparks-lab.org:8443/downloads/Resource/Protein/2_Protein_local_structure_prediction/jits.tar.xz`
-4. `tar -xvf jits.tar.xz`
+```bash
+git clone https://github.com/jas-preet/SPOT-1D-Single.git
+cd SPOT-1D-Single
+pip install -r requirements.txt
+```
 
-To install the dependencies and create a conda environment use the following commands
+Download the model checkpoints (about 1.2 GB) and check the download. The server only offers plain HTTP, so don't skip the checksum.
 
-5. `conda create -n spot_single_env python=3.7`
-6. `conda activate spot_single_env`
+```bash
+curl -LO http://183.36.5.251:8080/sparks_downloads/servers/downloads/Resource/Protein/2_Protein_local_structure_prediction/jits.tar.xz
+echo "8fef1e8091866f43f56f6c9e02f719607e0825a64c37d7fe8df7c2e3a07d1ea0  jits.tar.xz" | shasum -a 256 -c
+tar -xf jits.tar.xz
+```
 
-if GPU computer:
-7. `conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch`
+If the link stops working, look for SPOT-1D-Single on the [Zhou lab download page](https://zhouyq-lab.szbl.ac.cn/download/).
 
-for CPU only 
-7. `conda install pytorch==1.6.0 torchvision==0.7.0 cpuonly -c pytorch`
+### Original environment
 
-8. `conda install pandas=1.1.1`
+```bash
+conda create -n spot_single_env python=3.7
+conda activate spot_single_env
+conda install pytorch==1.6.0 torchvision==0.7.0 cpuonly -c pytorch   # GPU: replace cpuonly with cudatoolkit=10.1
+conda install pandas=1.1.1
+```
 
-Execute
-----
-To run SPOT-1D-Single use the following command
+## Usage
 
-`python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cuda:0`
+```bash
+python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cpu
+```
 
-or 
+| Option | Description |
+| --- | --- |
+| `--file_list` | Required. Text file with one FASTA path per line. Relative paths are resolved from the current directory. |
+| `--save_path` | Output directory, created if needed. Default: `results/` |
+| `--device` | `cpu` (default) or `cuda:0` |
+| `--jits_dir` | Directory holding the checkpoints. Default: `jits/` next to the script |
 
-`python spot1d_single.py --file_list file_lists/file_list_casp13.txt --save_path results/ --device cpu` 
+Each FASTA file must contain one sequence. Lower-case letters are accepted, a trailing `*` is removed, and residues other than the 20 standard amino acids are treated as unknown. Unknown residues have no reference surface area, so their `ASA` value (between 0 and 1) is a placeholder and does not mean the residue is buried.
 
-Datasets
-----
-`wget https://www.dropbox.com/s/2k4l6u82pwbadgl/datasets.tar.xz`
+## Output
 
-**License**
-----
-MIT LICENSE
+Each input produces `<save_path>/<fasta file name>.csv`, with one row per residue.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+| Column | Meaning |
+| --- | --- |
+| `AA` | Amino acid |
+| `SS3`, `SS8` | Predicted 3-state and 8-state secondary structure |
+| `ASA` | Accessible surface area |
+| `HseU`, `HseD` | Half-sphere exposure, up and down |
+| `CN` | Contact number |
+| `Psi`, `Phi`, `Theta`, `Tau` | Backbone angles in degrees |
+| `P3C`, `P3E`, `P3H` | 3-state probabilities |
+| `P8C`, `P8S`, `P8T`, `P8H`, `P8G`, `P8I`, `P8E`, `P8B` | 8-state probabilities |
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+## Limitations
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+These come from how the checkpoints were exported with `torch.jit.trace`:
+
+- Proteins are processed one at a time, because the checkpoints do not support batches larger than 1 ([#1](https://github.com/jas-preet/SPOT-1D-Single/issues/1)).
+- The GPU checkpoints only run on `cuda:0`.
+
+## Datasets
+
+```bash
+curl -L -o datasets.tar.xz "https://www.dropbox.com/scl/fi/ek78e18wq80jvet0ewf9a/datasets.tar.xz?rlkey=u04bs6ocqieoswrryotdt3d1r&dl=1"
+```
+
+## Tests
+
+The tests use small stand-in models, so they don't need the checkpoints.
+
+```bash
+pip install pytest
+pytest
+```
+
+## Citation
+
+Singh J, Litfin T, Paliwal K, Singh J, Hanumanthappa AK, Zhou Y. SPOT-1D-Single: improving the single-sequence-based prediction of protein secondary structure, backbone angles, solvent accessibility and half-sphere exposures using a large training set and ensembled deep learning. *Bioinformatics*. 2021;37(20):3464-3472. [doi:10.1093/bioinformatics/btab316](https://doi.org/10.1093/bioinformatics/btab316)
+
+## License
+
+[MIT](LICENSE)

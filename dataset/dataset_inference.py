@@ -1,8 +1,10 @@
 import os
+
 import torch
-from dataset.data_functions import read_fasta_file, read_list, one_hot
-from torch.utils.data import Dataset
 import torch.nn as nn
+from torch.utils.data import Dataset
+
+from dataset.data_functions import one_hot, read_fasta_file
 
 
 class ProteinDataset(Dataset):
@@ -17,7 +19,7 @@ class ProteinDataset(Dataset):
         seq = read_fasta_file(protein)
         seq_hot = one_hot(seq)
         protein_len = len(seq)
-        name = protein.split('/')[-1].split('.')[0]
+        name = os.path.splitext(os.path.basename(protein))[0]
 
         return seq_hot, protein_len, seq, name
 

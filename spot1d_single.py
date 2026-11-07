@@ -1,56 +1,81 @@
-import torch
-import numpy as np
-from dataset.dataset_inference import ProteinDataset, text_collate_fn
-from dataset.data_functions import pickle_load, read_list
-from torch.utils.data import DataLoader
-from main import classification, regression, write_csv
 import argparse
+import os
+import sys
+from pathlib import Path
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--file_list', default='', type=str, help='file list path ')
-parser.add_argument('--save_path', default='results/', type=str, help='save path')
-parser.add_argument('--device', default='cpu', type=str,
-                    help='"cuda:0", or "cpu" note wont run on other gpu then gpu0 due to limitations of jit trace')
+import torch
+from torch.utils.data import DataLoader
+
+from dataset.data_functions import pickle_load, read_fasta_file, read_list
+from dataset.dataset_inference import ProteinDataset, text_collate_fn
+from main import classification, regression, write_csv
+
+REPO_DIR = Path(__file__).resolve().parent
 
 
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Predict protein 1D structural properties from single sequences.")
+    parser.add_argument('--file_list', required=True, type=str,
+                        help='text file listing one FASTA file path per line')
+    parser.add_argument('--save_path', default='results/', type=str,
+                        help='output directory, created if needed (default: %(default)s)')
+    parser.add_argument('--device', default='cpu', choices=['cpu', 'cuda:0'],
+                        help='the GPU checkpoints were traced on cuda:0 and only run there '
+                             '(default: %(default)s)')
+    parser.add_argument('--jits_dir', default=REPO_DIR / 'jits', type=Path,
+                        help='directory holding the model checkpoints (default: jits/ next to this script)')
+    return parser.parse_args()
 
-path_list = read_list(args.file_list)
-dataset = ProteinDataset(path_list)
-fm12_loader = DataLoader(dataset, batch_size=1, collate_fn=text_collate_fn, num_workers=4)
-means = pickle_load("means_single.pkl")
-stds = pickle_load("stds_single.pkl")
-means = torch.tensor(means, dtype=torch.float32)
-stds = torch.tensor(stds, dtype=torch.float32)
 
-if args.device == "cpu":
-    model1_class = torch.jit.load("jits/model1_class_cpu.pth")
-    model2_class = torch.jit.load("jits/model2_class_cpu.pth")
-    model3_class = torch.jit.load("jits/model3_class_cpu.pth")
+def checkpoint_paths(jits_dir, kind, device):
+    suffix = 'cpu' if device == 'cpu' else 'gpu'
+    return [Path(jits_dir) / f'model{number}_{kind}_{suffix}.pth' for number in (1, 2, 3)]
 
-    model1_reg = torch.jit.load("jits/model1_reg_cpu.pth")
-    model2_reg = torch.jit.load("jits/model2_reg_cpu.pth")
-    model3_reg = torch.jit.load("jits/model3_reg_cpu.pth")
 
-elif args.device == "cuda:0":
-    model1_class = torch.jit.load("jits/model1_class_gpu.pth")
-    model2_class = torch.jit.load("jits/model2_class_gpu.pth")
-    model3_class = torch.jit.load("jits/model3_class_gpu.pth")
+def check_inputs(args):
+    """Report anything that would stop the run before spending time on the models."""
+    if args.device != 'cpu' and not torch.cuda.is_available():
+        sys.exit(f'error: --device {args.device} was requested but CUDA is not available')
 
-    model1_reg = torch.jit.load("jits/model1_reg_gpu.pth")
-    model2_reg = torch.jit.load("jits/model2_reg_gpu.pth")
-    model3_reg = torch.jit.load("jits/model3_reg_gpu.pth")
+    missing = [str(path) for kind in ('class', 'reg')
+               for path in checkpoint_paths(args.jits_dir, kind, args.device) if not path.is_file()]
+    if missing:
+        sys.exit('error: missing model checkpoints (see "Installation" in the README):\n  '
+                 + '\n  '.join(missing))
 
-else:
-    print("please check the arguments passed and refer to help associated with the arguments")
+    try:
+        path_list = read_list(args.file_list)
+        for path in path_list:
+            read_fasta_file(path)
+        os.makedirs(args.save_path, exist_ok=True)
+    except (OSError, ValueError) as error:
+        sys.exit(f'error: {error}')
+    if not path_list:
+        sys.exit(f'error: {args.file_list} does not list any FASTA files')
+    return path_list
 
-class_out = classification(fm12_loader, model1_class, model2_class, model3_class, means, stds, args.device)
-names, seq, ss3_pred_list, ss8_pred_list, ss3_prob_list, ss8_prob_list = class_out
 
-reg_out = regression(fm12_loader, model1_reg, model2_reg, model3_reg, means, stds, args.device)
-psi_list, phi_list, theta_list, tau_list, hseu_list, hsed_list, cn_list, asa_list = reg_out
-print(len(ss3_pred_list), len(psi_list))
-write_csv(class_out, reg_out, args.save_path)
+def load_ensemble(jits_dir, kind, device):
+    return [torch.jit.load(str(path)) for path in checkpoint_paths(jits_dir, kind, device)]
 
-## conda install pytorch torchvision cudatoolkit=10.1 -c pytorch
-## conda install pandas
+
+def main():
+    args = parse_args()
+    path_list = check_inputs(args)
+
+    # batch_size must stay 1: the traced checkpoints do not support larger batches
+    loader = DataLoader(ProteinDataset(path_list), batch_size=1, collate_fn=text_collate_fn)
+    means = torch.tensor(pickle_load(REPO_DIR / 'means_single.pkl'), dtype=torch.float32)
+    stds = torch.tensor(pickle_load(REPO_DIR / 'stds_single.pkl'), dtype=torch.float32)
+
+    # Each ensemble is released before the next is loaded to keep peak memory down
+    class_out = classification(loader, *load_ensemble(args.jits_dir, 'class', args.device),
+                               means, stds, args.device)
+    reg_out = regression(loader, *load_ensemble(args.jits_dir, 'reg', args.device),
+                         means, stds, args.device)
+    write_csv(class_out, reg_out, args.save_path)
+
+
+if __name__ == '__main__':
+    main()

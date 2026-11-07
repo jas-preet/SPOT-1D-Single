@@ -1,30 +1,49 @@
 import pickle
+
 import numpy as np
 
 SS3_CLASSES = 'CEH'
 SS8_CLASSES = 'CSTHGIEB'
 
+# Maximum accessible surface area per residue, used to convert relative ASA to absolute.
+# Anything else (X, B, Z, U, O, J, ...) falls back to UNKNOWN_RESIDUE_ASA.
+MAX_ASA = dict(zip(
+    "ACDEFGHIKLMNPQRSTVWY",
+    (115, 135, 150, 190, 210, 75, 195, 175, 200, 170,
+     185, 160, 145, 180, 225, 115, 140, 155, 255, 230),
+))
+UNKNOWN_RESIDUE_ASA = 1
+
 
 def read_list(file_name):
     """
-    read a text file to get the list of elements
+    read a text file to get the list of elements, ignoring blank lines
     :param file_name: complete path to a file (string)
     :return: list of elements in the text file
     """
     with open(file_name, 'r') as f:
-        text = f.read().splitlines()
-    return text
+        return [line.strip() for line in f if line.strip()]
 
 
 def read_fasta_file(fname):
     """
-    reads the sequence from the fasta file
+    reads the single sequence from a fasta file
     :param fname: filename (string)
-    :return: protein sequence  (string)
+    :return: upper-case protein sequence, without whitespace or a trailing stop "*" (string)
+    :raises ValueError: if the file does not hold exactly one sequence
     """
     with open(fname, 'r') as f:
-        AA = ''.join(f.read().splitlines()[1:])
-    return AA
+        lines = [line.strip() for line in f if line.strip()]
+
+    if not lines or not lines[0].startswith('>'):
+        raise ValueError(f"{fname}: expected a FASTA header line starting with '>'")
+    if any(line.startswith('>') for line in lines[1:]):
+        raise ValueError(f"{fname}: expected one sequence per file, found several")
+
+    sequence = ''.join(''.join(lines[1:]).split()).upper().rstrip('*')
+    if not sequence:
+        raise ValueError(f"{fname}: no sequence after the header")
+    return sequence
 
 
 def one_hot(seq):
@@ -57,50 +76,14 @@ def get_angle_degree(preds):
     return preds_angle
 
 
-def get_unnorm_asa(rel_asa, seq):
+def get_unnorm_asa(rel_asa, seqs):
     """
-    :param asa_pred: The predicted relative ASA
-    :param seq_list: Sequence of the protein
-    :return: absolute ASA_PRED
+    :param rel_asa: predicted relative ASA, padded to the longest sequence (tensor)[B,L]
+    :param seqs: protein sequences in the batch, longest first
+    :return: absolute ASA (array)[B,L]
     """
-    rnam1_std = "ACDEFGHIKLMNPQRSTVWY-X"
-
-    ASA_std = (115, 135, 150, 190, 210, 75, 195, 175, 200, 170,
-               185, 160, 145, 180, 225, 115, 140, 155, 255, 230, 1, 1)
-    dict_rnam1_ASA = dict(zip(rnam1_std, ASA_std))
-    seq = seq[0]
-    # replacing the sequence residues with the max possible residue asa
-    asa_max = np.array([dict_rnam1_ASA[i] for i in seq]).astype(np.float32)
-    ### multiplying with the maxllist to unnormalise.
-    abs_asa = np.multiply(rel_asa.cpu().detach().numpy(), asa_max)
-    return abs_asa
-
-
-def get_unnorm_asa_new(rel_asa, seq):
-    """
-    :param asa_pred: The predicted relative ASA
-    :param seq_list: Sequence of the protein
-    :return: absolute ASA_PRED
-    """
-    rnam1_std = "ACDEFGHIKLMNPQRSTVWY-X"
-
-    ASA_std = (115, 135, 150, 190, 210, 75, 195, 175, 200, 170,
-               185, 160, 145, 180, 225, 115, 140, 155, 255, 230, 1, 1)
-    dict_rnam1_ASA = dict(zip(rnam1_std, ASA_std))
-    # seq = seq[0]
-    max_seq_len = len(seq[0])
-    array_list = []
-    for i, single_seq in enumerate(list(seq)):
-        rel_asa_current = rel_asa[i, :]
-        seq_len_diff = max_seq_len - len(single_seq)
-        single_seq = single_seq + ("X" * seq_len_diff)
-
-        asa_max = np.array([dict_rnam1_ASA[i] for i in single_seq]).astype(np.float32)
-        abs_asa = np.multiply(rel_asa_current.cpu().detach().numpy(), asa_max)
-        array_list.append(abs_asa)
-    # replacing the sequence residues with the max possible residue asa
-    # asa_max = np.array([dict_rnam1_ASA[i] for i in seq]).astype(np.float32)
-    ### multiplying with the maxllist to unnormalise.
-    # abs_asa = np.multiply(rel_asa.cpu().detach().numpy(), asa_max)
-    final_array = np.array(array_list)
-    return final_array
+    rel_asa = rel_asa.cpu().detach().numpy()
+    asa_max = np.full(rel_asa.shape, UNKNOWN_RESIDUE_ASA, dtype=np.float32)
+    for i, seq in enumerate(seqs):
+        asa_max[i, :len(seq)] = [MAX_ASA.get(residue.upper(), UNKNOWN_RESIDUE_ASA) for residue in seq]
+    return np.multiply(rel_asa, asa_max)

@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Downloaded checkpoints and generated output
+jits/
+jits.tar.xz
+datasets.tar.xz
+results/

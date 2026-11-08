@@ -4,6 +4,7 @@
 
 [![Paper](https://img.shields.io/badge/Bioinformatics-2021-1f6feb)](https://doi.org/10.1093/bioinformatics/btab316)
 [![Model on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-checkpoints-ffcc4d)](https://huggingface.co/Jas-preet/SPOT-1D-Single)
+[![Dataset on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-dataset-ffcc4d)](https://huggingface.co/datasets/Jas-preet/SPOT-datasets)
 [![Tests](https://github.com/jas-preet/SPOT-1D-Single/actions/workflows/tests.yml/badge.svg)](https://github.com/jas-preet/SPOT-1D-Single/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -261,7 +262,16 @@ Some common uses:
 
 ## Datasets
 
-The training, validation and test sets used in the paper:
+The splits used in the paper, with per-residue labels for every protein that has them, are on Hugging Face as [Jas-preet/SPOT-datasets](https://huggingface.co/datasets/Jas-preet/SPOT-datasets) (configuration `spot-1d-single`):
+
+```python
+from datasets import load_dataset
+
+ds = load_dataset("Jas-preet/SPOT-datasets", "spot-1d-single", revision="v1.0")
+print(ds)
+```
+
+Labels are available for all of TEST2018 and the CASP sets, 38,913 of the 39,120 training chains, and part of the SPOT-2016 and SPOT-2018 sets; the [dataset card](https://huggingface.co/datasets/Jas-preet/SPOT-datasets#spot-1d-single) has the full coverage table. The original ID lists are also available on their own:
 
 ```bash
 curl -L -o datasets.tar.xz "https://www.dropbox.com/scl/fi/ek78e18wq80jvet0ewf9a/datasets.tar.xz?rlkey=u04bs6ocqieoswrryotdt3d1r&dl=1"
